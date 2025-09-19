@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* styles.css */
+.expense-overview {
+    @apply bg-gray-100 py-2 rounded lg:py-4 flex justify-evenly items-center;
+    width: 45%;
+}
+
+@media (min-width: 640px) {
+    .expense-overview {
+        width: 33%;
+    }
+}
+
+@media (min-width: 768px) {
+    .expense-overview {
+        width: 40%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .expense-overview {
+        width: 23%;
+    }
+}
+
+@media (min-width: 1180px) {
+    .expense-overview {
+        width: 20%;
+    }
+}
+
+
+.form-heading{
+    @apply mb-2 tracking-wide font-semibold;
+}
+
+@media (min-width: 1024px) {
+    .form-heading {
+        font-size: 17px;
+    }
+}
+
+
+.form-input{
+    @apply focus:text-black focus:tracking-wide border-1 border-gray-300;
+}
+
+@media (min-width: 1024px) {
+    .form-input { 
+        font-size: 17px;
+    }
+}
