@@ -9,14 +9,17 @@ jobs:
   deploy-backend:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22.18.0'
 
+      # 3️⃣ Deploy backend to EC2
       - name: Deploy backend to EC2
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -28,7 +31,7 @@ jobs:
             mkdir -p /root/urtracker
             cd /root/urtracker
 
-            # Clone repo if it doesn't exist
+            # Clone repo if not exists
             if [ ! -d ".git" ]; then
               git clone https://github.com/Prabhmeetsingh087/UrTracker-CICD.git .
             fi
@@ -42,21 +45,24 @@ jobs:
             npm install --production
 
             # Restart backend with PM2
-            pm2 restart urtracker-server || pm2 start server.js --name urtracker-server
+            pm2 restart urtracker-server || pm2 start index.js --name urtracker-server
             pm2 save
 
   deploy-frontend:
     runs-on: ubuntu-latest
     needs: deploy-backend
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22.18.0'
 
+      # 3️⃣ Configure AWS credentials
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -64,16 +70,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # 4️⃣ Build frontend (Vite React)
       - name: Build React app
         run: |
           cd client
           npm install
           npm run build
-          ls -la build  # verify build folder exists
+          ls -la dist  # verify dist folder exists
 
+      # 5️⃣ Deploy frontend to S3
       - name: Deploy to S3
         run: |
           cd client
-          aws s3 sync build s3://${{ secrets.S3_BUCKET }} --delete
-
-      
+          aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete
