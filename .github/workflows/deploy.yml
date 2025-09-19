@@ -24,13 +24,13 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Navigate to repo on EC2
-            mkdir -p /root/app
-            cd /root/app
+            # Navigate to app folder on EC2
+            mkdir -p /root/urtracker
+            cd /root/urtracker
 
-            # Clone repo if not exists
+            # Clone repo if it doesn't exist
             if [ ! -d ".git" ]; then
-              git clone https://github.com/Prabhmeetsingh087/UrTracker-CICD.git.
+              git clone https://github.com/Prabhmeetsingh087/UrTracker-CICD.git .
             fi
 
             # Pull latest code
@@ -42,7 +42,7 @@ jobs:
             npm install --production
 
             # Restart backend with PM2
-            pm2 restart mern-server || pm2 start server.js --name mern-server
+            pm2 restart urtracker-server || pm2 start server.js --name urtracker-server
             pm2 save
 
   deploy-frontend:
@@ -69,9 +69,11 @@ jobs:
           cd client
           npm install
           npm run build
+          ls -la build  # verify build folder exists
 
       - name: Deploy to S3
         run: |
-          aws s3 sync client/build s3://${{ secrets.S3_BUCKET }} --delete
+          cd client
+          aws s3 sync build s3://${{ secrets.S3_BUCKET }} --delete
 
       
