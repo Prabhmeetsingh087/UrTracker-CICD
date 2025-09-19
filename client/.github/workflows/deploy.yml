@@ -1,0 +1,77 @@
+name: MERN Full CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.18.0'
+
+      - name: Deploy backend to EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Navigate to repo on EC2
+            mkdir -p /root/app
+            cd /root/app
+
+            # Clone repo if not exists
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Prabhmeetsingh087/UrTracker-CICD.git.
+            fi
+
+            # Pull latest code
+            git fetch --all
+            git reset --hard origin/main
+
+            # Install server dependencies
+            cd server
+            npm install --production
+
+            # Restart backend with PM2
+            pm2 restart mern-server || pm2 start server.js --name mern-server
+            pm2 save
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.18.0'
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build React app
+        run: |
+          cd client
+          npm install
+          npm run build
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync client/build s3://${{ secrets.S3_BUCKET }} --delete
+
+      
