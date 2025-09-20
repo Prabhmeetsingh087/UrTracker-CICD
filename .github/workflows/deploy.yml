@@ -75,14 +75,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 4️⃣ Build frontend (Vite React)
+      # 4️⃣ Build frontend (Vite React) with secrets
       - name: Build React app
         run: |
           cd client
+          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
+          VITE_API_URL=${{ secrets.VITE_API_URL }} \
           npm ci
+          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
+          VITE_API_URL=${{ secrets.VITE_API_URL }} \
           npm run build
           ls -la dist  # Verify build folder exists
 
+      # 5️⃣ Deploy frontend to S3
       - name: Deploy frontend to S3
         run: |
           cd client
