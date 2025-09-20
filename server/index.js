@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.CONNECTION_URI);
 
 app.get('/', (req, res) => {
-  res.send('Welcome to the Expense Tracker API');
+  res.send('Welcome to the Expense Tracker API 16:30');
 });
 
 app.post('/expense', addExpenseFunc);
