@@ -83,9 +83,9 @@ jobs:
           npm run build
           ls -la dist  # Verify build folder exists
 
-      # 5️⃣ Deploy frontend to S3
-      - name: Deploy to S3
+      - name: Deploy frontend to S3
         run: |
           cd client
           aws s3 sync dist s3://urtracker --delete --exact-timestamps
+          aws s3 cp dist/index.html s3://urtracker/index.html --cache-control "no-cache, no-store, must-revalidate"
           echo "Frontend deployed to S3 bucket: urtracker"
