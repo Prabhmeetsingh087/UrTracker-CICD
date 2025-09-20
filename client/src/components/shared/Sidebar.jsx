@@ -38,7 +38,7 @@ const Sidebar = () => {
                 <div className='flex flex-col justify-between h-[85vh]'>
                   <div className='flex flex-col mx-4 text-center'>
                     <Link to='/home' className='text-slate-500 text-lg border-b-2 border-y-gray-100 p-4 hover:text-slate-900 hover:border-y-gray-200'> Homesss </Link>
-                    <Link to='/expense' className='text-slate-500 text-lg border-b-2 border-y-gray-100 p-4 hover:text-slate-900 hover:border-y-gray-200'> Expense </Link>
+                    <Link to='/expense' className='text-slate-500 text-lg border-b-2 border-y-gray-100 p-4 hover:text-slate-900 hover:border-y-gray-200'> Expenses </Link>
                     <Link to='/dashboard' className='text-slate-500 text-lg border-y-gray-100 p-4 hover:text-slate-900'> Dashboard </Link>
                   </div>
                   <div>
