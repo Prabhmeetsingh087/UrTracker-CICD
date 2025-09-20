@@ -1,0 +1,98 @@
+name: MERN Full CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.18.0'
+
+      # 3️⃣ Deploy backend to EC2
+      - name: Deploy backend to EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Navigate to deployment folder
+            mkdir -p /home/ubuntu/UrTracker-CICD
+            cd /home/ubuntu/UrTracker-CICD
+
+            # Clone repo if it doesn't exist
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Prabhmeetsingh087/UrTracker-CICD.git .
+            fi
+
+            # Pull latest code
+            git fetch --all
+            git reset --hard origin/main
+
+            # Install server dependencies (omit devDependencies)
+            cd server
+            npm install --omit=dev
+
+            # Restart backend with PM2 (by script path)
+            pm2 restart index.js --name urtracker-server || pm2 start index.js --name urtracker-server
+
+            # Save PM2 process list
+            pm2 save
+
+            # Ensure PM2 starts on system reboot
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.18.0'
+
+      # 3️⃣ Configure AWS credentials
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 4️⃣ Build frontend (Vite React)
+      - name: Build React app
+        run: |
+          cd client
+          npm install
+          npm run build
+          ls -la dist  # verify dist folder exists
+
+      # 5️⃣ Deploy frontend to S3
+      - name: Deploy to S3
+        run: |
+          cd client
+          aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete --exact-timestamps
+
+      # 6️⃣ (Optional) Invalidate CloudFront cache
+      - name: Invalidate CloudFront cache
+        if: env.CLOUDFRONT_ID != ''
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_ID }} \
+            --paths "/*"
