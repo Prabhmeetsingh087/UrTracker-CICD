@@ -24,14 +24,14 @@ jobs:
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ${{ secrets.EC2_USER }}   # usually "ubuntu"
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Navigate to app folder on EC2
-            mkdir -p /root/UrTracker-CICD
-            cd /root/UrTracker-CICD
+            # Ensure deployment folder exists
+            mkdir -p /home/ubuntu/UrTracker-CICD
+            cd /home/ubuntu/UrTracker-CICD
 
-            # Clone repo if not exists
+            # Clone repo if it doesn't exist
             if [ ! -d ".git" ]; then
               git clone https://github.com/Prabhmeetsingh087/UrTracker-CICD.git .
             fi
@@ -44,9 +44,19 @@ jobs:
             cd server
             npm install --production
 
-            # Restart backend with PM2 from inside server folder
-            pm2 restart urtracker-server || pm2 start index.js --name urtracker-server
+            # Restart backend with PM2
+            pm2 describe urtracker-server > /dev/null
+            if [ $? -eq 0 ]; then
+              pm2 restart urtracker-server
+            else
+              pm2 start index.js --name urtracker-server
+            fi
+
+            # Save PM2 process list
             pm2 save
+
+            # Ensure PM2 starts on system reboot
+            pm2 startup systemd -u ubuntu --hp /home/ubuntu
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -84,7 +94,7 @@ jobs:
           cd client
           aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete --exact-timestamps
 
-      # 6️⃣ (Optional) Invalidate CloudFront cache so users see new build
+      # 6️⃣ (Optional) Invalidate CloudFront cache
       - name: Invalidate CloudFront cache
         if: env.CLOUDFRONT_ID != ''
         run: |
