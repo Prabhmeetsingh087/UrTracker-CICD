@@ -24,7 +24,7 @@ export const addExpenseFunc = async ( req, res ) => {
 
         // Send a success response
         res.status(200).json({
-            message: 'Expense added successfully'
+            message: 'Expense added successfully testing'
         });
     }
 
