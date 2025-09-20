@@ -62,7 +62,7 @@ const Sidebar = () => {
 
         <div className='flex items-center mx-auto my-8 gap-2 lg:gap-4'>
           <img className='w-6 h-6  xl:w-8 xl:h-8' src={Logo} alt='Icon' />
-          <h1 className='font-mono text-xl md:text-xl text-white xl:text-2xl'> UrTrackerss </h1>
+          <h1 className='font-mono text-xl md:text-xl text-white xl:text-2xl'> UrTrackersss </h1>
         </div>
 
         <div className='flex flex-col justify-between h-full m-4 -mt-4'>
