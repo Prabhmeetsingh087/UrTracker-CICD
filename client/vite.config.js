@@ -3,22 +3,29 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Convert import.meta.url to __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
+
+  // Dev server proxy (only for local development)
+  server: mode === 'development' ? {
     proxy: {
-      "/api/v1": "http://localhost:5000/",
-    }
-  },
+      "/api/v1": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  } : undefined,
+
   build: {
     outDir: 'dist',
     rollupOptions: {
@@ -28,5 +35,7 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
-  }
-});
+  },
+
+  base: '/', // for S3 deployment
+}));
