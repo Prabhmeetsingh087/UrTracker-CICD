@@ -24,10 +24,10 @@ jobs:
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}   # usually "ubuntu"
+          username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Ensure deployment folder exists
+            # Navigate to deployment folder
             mkdir -p /home/ubuntu/UrTracker-CICD
             cd /home/ubuntu/UrTracker-CICD
 
@@ -44,13 +44,8 @@ jobs:
             cd server
             npm install --production
 
-            # Restart backend with PM2
-            pm2 describe urtracker-server > /dev/null
-            if [ $? -eq 0 ]; then
-              pm2 restart urtracker-server
-            else
-              pm2 start index.js --name urtracker-server
-            fi
+            # Restart backend with PM2 (by script path)
+            pm2 restart index.js --name urtracker-server || pm2 start index.js --name urtracker-server
 
             # Save PM2 process list
             pm2 save
