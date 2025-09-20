@@ -40,9 +40,9 @@ jobs:
             git fetch --all
             git reset --hard origin/main
 
-            # Install server dependencies
+            # Install server dependencies (omit devDependencies)
             cd server
-            npm install --production
+            npm install --omit=dev
 
             # Restart backend with PM2 (by script path)
             pm2 restart index.js --name urtracker-server || pm2 start index.js --name urtracker-server
