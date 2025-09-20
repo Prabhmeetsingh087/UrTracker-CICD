@@ -69,7 +69,7 @@ const Sidebar = () => {
           <div className='flex flex-col'>
             <Link to='/home' className='text-gray-300 text-lg border-b-2 border-y-slate-700 p-4 hover:text-white hover:border-y-slate-600 md:text-xl'> Home </Link>
             <Link to='/expense' className='text-gray-300 text-lg border-b-2 border-y-slate-700 p-4 hover:text-white hover:border-y-slate-600 md:text-xl'> Expensess</Link>
-            <Link to='/dashboard' className='text-gray-300 text-lg border-y-slate-700 p-4 hover:text-white md:text-xl'> Dashboard </Link>
+            <Link to='/dashboard' className='text-gray-300 text-lg border-y-slate-700 p-4 hover:text-white md:text-xl'> Dashboards </Link>
           </div>
 
           <div>
