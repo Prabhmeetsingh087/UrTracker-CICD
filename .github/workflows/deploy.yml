@@ -28,8 +28,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Navigate to app folder on EC2
-            mkdir -p /root/urtracker
-            cd /root/urtracker
+            mkdir -p /root/UrTracker-CICD
+            cd /root/UrTracker-CICD
 
             # Clone repo if not exists
             if [ ! -d ".git" ]; then
@@ -44,7 +44,7 @@ jobs:
             cd server
             npm install --production
 
-            # Restart backend with PM2
+            # Restart backend with PM2 from inside server folder
             pm2 restart urtracker-server || pm2 start index.js --name urtracker-server
             pm2 save
 
@@ -82,4 +82,12 @@ jobs:
       - name: Deploy to S3
         run: |
           cd client
-          aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete
+          aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete --exact-timestamps
+
+      # 6️⃣ (Optional) Invalidate CloudFront cache so users see new build
+      - name: Invalidate CloudFront cache
+        if: env.CLOUDFRONT_ID != ''
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_ID }} \
+            --paths "/*"
