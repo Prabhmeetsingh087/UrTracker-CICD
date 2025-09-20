@@ -15,7 +15,8 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://urtracker.netlify.app'
+  'https://urtracker.netlify.app',
+  'http://urtracker.s3-website.eu-north-1.amazonaws.com'
 ];
 
 const corsOptions = {
