@@ -67,26 +67,17 @@ jobs:
         with:
           node-version: '22.18.0'
 
-      # 3️⃣ Configure AWS credentials
-      - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # 4️⃣ Build frontend (Vite React)
+      # 3️⃣ Build frontend (Vite React)
       - name: Build React app
         run: |
           cd client
-          npm install
-          npm run build
-          ls -la dist  # verify dist folder exists
+          npm ci                       # Clean install
+          npm run build                 # Build production
+          ls -la dist                   # Verify build folder exists
 
-      # 5️⃣ Deploy frontend to S3
+      # 4️⃣ Deploy frontend to S3
       - name: Deploy to S3
         run: |
           cd client
-          aws s3 sync dist s3://${{ secrets.S3_BUCKET }} --delete --exact-timestamps
-
-     
+          aws s3 sync dist s3://urtracker --delete --exact-timestamps
+          echo "Frontend deployed to S3 bucket: urtracker"
